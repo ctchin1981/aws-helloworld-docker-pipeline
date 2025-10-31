@@ -1,0 +1,1 @@
+aws ecs update-service --cluster hello-world-cluster --service hello-world-service --task-definition hello-world-task

@@ -15,7 +15,7 @@ pipeline {
             steps {
                 echo "IMAGE_NAME - ${IMAGE_NAME}"
                 script {
-                    dockerImage = docker.build(IMAGE_NAME)
+                    dockerImage = docker.build(IMAGE_NAME, 'hello-world-nodejs')
                 }
             }
         }

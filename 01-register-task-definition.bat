@@ -1,1 +1,2 @@
 aws ecs register-task-definition --family hello-world-task --network-mode awsvpc --requires-compatibilities FARGATE --cpu "256" --memory "512" --execution-role-arn arn:aws:iam::701909704491:role/ecsTaskExecutionRole --container-definitions file://container-definitions.json
+aws ecs register-task-definition --family java-app-task --network-mode awsvpc --requires-compatibilities FARGATE --cpu "256" --memory "512" --execution-role-arn arn:aws:iam::701909704491:role/ecsTaskExecutionRole --container-definitions file://container-definitions-java.json

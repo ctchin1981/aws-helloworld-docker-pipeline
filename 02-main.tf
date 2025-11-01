@@ -56,6 +56,13 @@ resource "aws_security_group" "ecs_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 5001
+    to_port     = 5001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -125,6 +132,40 @@ resource "aws_lb_listener" "app" {
   }
 }
 
+resource "aws_lb_target_group" "java" {
+  name        = "java-app-tg"
+  port        = 5001
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
+    port                = "5001"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 10
+  }
+}
+
+resource "aws_lb_listener_rule" "java" {
+  listener_arn = aws_lb_listener.app.arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.java.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/java*"]
+    }
+  }
+}
+
 resource "aws_ecs_service" "hello" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
@@ -145,6 +186,28 @@ resource "aws_ecs_service" "hello" {
   }
 
   depends_on = [aws_lb_listener.app]
+}
+
+resource "aws_ecs_service" "java" {
+  name            = "java-app-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = "java-app-task"
+  launch_type     = "FARGATE"
+  desired_count   = 1
+
+  network_configuration {
+    subnets          = aws_subnet.public[*].id
+    security_groups  = [aws_security_group.ecs_sg.id]
+    assign_public_ip = true
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.java.arn
+    container_name   = "java-app"
+    container_port   = 5001
+  }
+
+  depends_on = [aws_lb_listener_rule.java]
 }
 
 output "alb_dns_name" {

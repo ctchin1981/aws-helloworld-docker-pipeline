@@ -1,0 +1,79 @@
+def dockerImage
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        AWS_DEFAULT_REGION = 'ap-southeast-1'
+        IMAGE_TAG = "v${env.BUILD_NUMBER}"
+        IMAGE_NAME = "ctchin1981/hello-world-java:${IMAGE_TAG}"
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                echo "IMAGE_NAME - ${IMAGE_NAME}"
+                script {
+                    dockerImage = docker.build(IMAGE_NAME, 'hello-world-java')
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('', 'myDockerHub') {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+
+        // stage('Generate container-definitions-java.json') {
+        //     steps {
+        //         writeFile file: 'container-definitions-java.json', text: """
+        //         [
+        //             {
+        //                 "name": "hello-world",
+        //                 "image": "${IMAGE_NAME}",
+        //                 "portMappings": [
+        //                     {
+        //                     "containerPort": 5000,
+        //                     "protocol": "tcp"
+        //                     }
+        //                 ],
+        //                 "essential": true
+        //             }
+        //         ]
+        //         """
+        //     }
+        // }
+
+        // stage('Register ECS Task Definition') {
+        //     steps {
+        //         sh """
+        //             aws ecs register-task-definition \
+        //             --family hello-world-task \
+        //             --network-mode awsvpc \
+        //             --requires-compatibilities FARGATE \
+        //             --cpu "256" \
+        //             --memory "512" \
+        //             --execution-role-arn arn:aws:iam::701909704491:role/ecsTaskExecutionRole \
+        //             --container-definitions file://container-definitions-java.json
+        //         """
+        //     }
+        // }
+
+        // stage('Update ECS Service') {
+        //     steps {
+        //         sh """
+        //             aws ecs update-service \
+        //             --cluster hello-world-cluster \
+        //             --service hello-world-service \
+        //             --task-definition hello-world-task
+        //         """
+        //     }
+        // }
+    }
+}

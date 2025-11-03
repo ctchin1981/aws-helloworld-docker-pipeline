@@ -1,7 +1,7 @@
 [
   {
-    "name": "hello-world",
-    "image": "ctchin1981/hello-world-python:0.0.3.RELEASE",
+    "name": "java-app",
+    "image": "ctchin1981/hello-world-java:v1",
     "portMappings": [
       {
         "containerPort": 5000,

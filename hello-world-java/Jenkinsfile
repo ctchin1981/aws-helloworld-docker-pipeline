@@ -30,50 +30,50 @@ pipeline {
             }
         }
 
-        // stage('Generate container-definitions-java.json') {
-        //     steps {
-        //         writeFile file: 'container-definitions-java.json', text: """
-        //         [
-        //             {
-        //                 "name": "hello-world",
-        //                 "image": "${IMAGE_NAME}",
-        //                 "portMappings": [
-        //                     {
-        //                     "containerPort": 5000,
-        //                     "protocol": "tcp"
-        //                     }
-        //                 ],
-        //                 "essential": true
-        //             }
-        //         ]
-        //         """
-        //     }
-        // }
+        stage('Generate container-definitions-java.json') {
+            steps {
+                writeFile file: 'container-definitions-java.json', text: """
+                [
+                    {
+                        "name": "java-app",
+                        "image": "${IMAGE_NAME}",
+                        "portMappings": [
+                            {
+                            "containerPort": 5001,
+                            "protocol": "tcp"
+                            }
+                        ],
+                        "essential": true
+                    }
+                ]
+                """
+            }
+        }
 
-        // stage('Register ECS Task Definition') {
-        //     steps {
-        //         sh """
-        //             aws ecs register-task-definition \
-        //             --family hello-world-task \
-        //             --network-mode awsvpc \
-        //             --requires-compatibilities FARGATE \
-        //             --cpu "256" \
-        //             --memory "512" \
-        //             --execution-role-arn arn:aws:iam::701909704491:role/ecsTaskExecutionRole \
-        //             --container-definitions file://container-definitions-java.json
-        //         """
-        //     }
-        // }
+        stage('Register ECS Task Definition') {
+            steps {
+                sh """
+                    aws ecs register-task-definition \
+                    --family java-app-task \
+                    --network-mode awsvpc \
+                    --requires-compatibilities FARGATE \
+                    --cpu "256" \
+                    --memory "512" \
+                    --execution-role-arn arn:aws:iam::701909704491:role/ecsTaskExecutionRole \
+                    --container-definitions file://container-definitions-java.json
+                """
+            }
+        }
 
-        // stage('Update ECS Service') {
-        //     steps {
-        //         sh """
-        //             aws ecs update-service \
-        //             --cluster hello-world-cluster \
-        //             --service hello-world-service \
-        //             --task-definition hello-world-task
-        //         """
-        //     }
-        // }
+        stage('Update ECS Service') {
+            steps {
+                sh """
+                    aws ecs update-service \
+                    --cluster hello-world-cluster \
+                    --service java-app-service \
+                    --task-definition java-app-task
+                """
+            }
+        }
     }
 }

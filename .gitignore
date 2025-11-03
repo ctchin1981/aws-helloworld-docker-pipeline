@@ -3,3 +3,4 @@
 hello-world-java/target/
 *.tfstate
 *.tfstate.backup
+.vscode/

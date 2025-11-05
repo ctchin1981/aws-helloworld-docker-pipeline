@@ -1,0 +1,12 @@
+<settings>
+  <proxies>
+    <proxy>
+      <id>docker-desktop-proxy</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>http.docker.internal</host>
+      <port>3128</port>
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>

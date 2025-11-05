@@ -14,6 +14,14 @@
 # ---- Stage 1: Build the Spring Boot JAR ----
 FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
+# Accept proxy settings as build args (optional)
+ARG HTTP_PROXY=http.docker.internal:3128
+ARG HTTPS_PROXY=http.docker.internal:3128
+
+# Set proxy environment variables
+ENV http_proxy=${HTTP_PROXY}
+ENV https_proxy=${HTTPS_PROXY}
+
 # Set working directory
 WORKDIR /home/app
 
@@ -23,8 +31,11 @@ COPY pom.xml .
 # Install certificates (important for HTTPS Maven repos)
 RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 
-# Pre-download dependencies (cached unless pom.xml changes)
-RUN mvn dependency:go-offline -B
+# Optional: copy Maven proxy config if present
+COPY settings.xml /root/.m2/settings.xml
+
+# Pre-download dependencies with retry logic
+RUN mvn dependency:go-offline -B -Dmaven.wagon.http.retryHandler.count=3
 
 # Copy source code
 COPY src ./src

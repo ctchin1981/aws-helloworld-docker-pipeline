@@ -15,8 +15,8 @@
 FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 # Accept proxy settings as build args (optional)
-ARG HTTP_PROXY=http.docker.internal:3128
-ARG HTTPS_PROXY=http.docker.internal:3128
+ARG HTTP_PROXY=http://http.docker.internal:3128
+ARG HTTPS_PROXY=http://http.docker.internal:3128
 
 # Set proxy environment variables
 ENV http_proxy=${HTTP_PROXY}
@@ -27,6 +27,15 @@ WORKDIR /home/app
 
 # Copy only pom.xml first to leverage Docker layer caching
 COPY pom.xml .
+
+# Fix proxy format for APT (APT requires full URI with scheme)
+ENV APT_HTTP_PROXY=${HTTP_PROXY}
+ENV APT_HTTPS_PROXY=${HTTPS_PROXY}
+
+# Configure APT to use correct proxy format
+RUN echo "Acquire::http::Proxy \"${APT_HTTP_PROXY}\";" >> /etc/apt/apt.conf.d/99proxy && \
+    echo "Acquire::https::Proxy \"${APT_HTTPS_PROXY}\";" >> /etc/apt/apt.conf.d/99proxy
+
 
 # Install certificates (important for HTTPS Maven repos)
 RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates

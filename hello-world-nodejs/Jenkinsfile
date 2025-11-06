@@ -15,7 +15,8 @@ pipeline {
             steps {
                 echo "IMAGE_NAME - ${IMAGE_NAME}"
                 script {
-                    dockerImage = docker.build(IMAGE_NAME, 'hello-world-nodejs')
+                    def networkHost = "--network=host"
+                    dockerImage = docker.build(IMAGE_NAME, '${networkHost} hello-world-nodejs')
                 }
             }
         }

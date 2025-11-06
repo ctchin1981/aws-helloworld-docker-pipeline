@@ -16,7 +16,7 @@ pipeline {
                 echo "IMAGE_NAME - ${IMAGE_NAME}"
                 script {
                     // Check if Maven Central is reachable
-                    def canReachMaven = sh(
+                    // def canReachMaven = sh(
                     //     script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
                     //     returnStdout: true
                     // ).trim()

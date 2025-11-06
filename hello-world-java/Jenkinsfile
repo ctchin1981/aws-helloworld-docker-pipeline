@@ -11,57 +11,58 @@ pipeline {
     }
 
     stages {
-        // stage('Build Docker Image') {
+        stage('Build Docker Image') {
+            steps {
+                echo "IMAGE_NAME - ${IMAGE_NAME}"
+                script {
+                    // Check if Maven Central is reachable
+                    // def canReachMaven = sh(
+                    //     script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
+                    //     returnStdout: true
+                    // ).trim()
+
+                    // def proxyArgs = canReachMaven == 'true' ? "" :
+                    //     "--build-arg HTTP_PROXY=http.docker.internal:3128 --build-arg HTTPS_PROXY=http.docker.internal:3128"
+
+                    def networkHost = "--network=host"
+                    dockerImage = docker.build(IMAGE_NAME, "${networkHost} hello-world-java")
+                }
+            }
+        }
+
+        // stage('Build Docker Image2') {
         //     steps {
-        //         echo "IMAGE_NAME - ${IMAGE_NAME}"
         //         script {
+        //             def IMAGE_NAME = "ctchin1981/hello-world-java:v14"
+
         //             // Check if Maven Central is reachable
         //             def canReachMaven = sh(
         //                 script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
         //                 returnStdout: true
         //             ).trim()
 
-        //             def proxyArgs = canReachMaven == 'true' ? "" :
-        //                 "--build-arg HTTP_PROXY=http.docker.internal:3128 --build-arg HTTPS_PROXY=http.docker.internal:3128"
+        //             echo "Maven Central reachable: ${canReachMaven}"
 
-        //             dockerImage = docker.build(IMAGE_NAME, "${proxyArgs} hello-world-java")
+        //             // Choose build flags based on reachability
+        //             def buildFlags = ""
+        //             if (canReachMaven == "true") {
+        //                 echo "Using public DNS override (no proxy)"
+        //                 buildFlags = "--dns=8.8.8.8 --dns=1.1.1.1"
+        //             } else {
+        //                 echo "Using proxy injection"
+        //                 buildFlags = "--build-arg HTTP_PROXY=http://192.168.65.2:3128 --build-arg HTTPS_PROXY=http://192.168.65.2:3128"
+        //             }
+
+        //             // Run raw docker build
+        //             sh """
+        //                 docker build \
+        //                 ${buildFlags} \
+        //                 -t ${IMAGE_NAME} \
+        //                 hello-world-java
+        //             """
         //         }
         //     }
         // }
-
-        stage('Build Docker Image2') {
-            steps {
-                script {
-                    def IMAGE_NAME = "ctchin1981/hello-world-java:v14"
-
-                    // Check if Maven Central is reachable
-                    def canReachMaven = sh(
-                        script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Maven Central reachable: ${canReachMaven}"
-
-                    // Choose build flags based on reachability
-                    def buildFlags = ""
-                    if (canReachMaven == "true") {
-                        echo "Using public DNS override (no proxy)"
-                        buildFlags = "--dns=8.8.8.8 --dns=1.1.1.1"
-                    } else {
-                        echo "Using proxy injection"
-                        buildFlags = "--build-arg HTTP_PROXY=http://192.168.65.2:3128 --build-arg HTTPS_PROXY=http://192.168.65.2:3128"
-                    }
-
-                    // Run raw docker build
-                    sh """
-                        docker build \
-                        ${buildFlags} \
-                        -t ${IMAGE_NAME} \
-                        hello-world-java
-                    """
-                }
-            }
-        }
 
 
         stage('Push to Docker Hub') {

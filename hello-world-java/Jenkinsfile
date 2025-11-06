@@ -17,14 +17,16 @@ pipeline {
                 script {
                     // Check if Maven Central is reachable
                     def canReachMaven = sh(
-                        script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
-                        returnStdout: true
-                    ).trim()
+                    //     script: "curl -s --connect-timeout 3 https://repo.maven.apache.org/maven2 > /dev/null && echo true || echo false",
+                    //     returnStdout: true
+                    // ).trim()
 
-                    def proxyArgs = canReachMaven == 'true' ? "" :
-                        "--build-arg HTTP_PROXY=http.docker.internal:3128 --build-arg HTTPS_PROXY=http.docker.internal:3128"
+                    // def proxyArgs = canReachMaven == 'true' ? "" :
+                    //     "--build-arg HTTP_PROXY=http.docker.internal:3128 --build-arg HTTPS_PROXY=http.docker.internal:3128"
 
-                    dockerImage = docker.build(IMAGE_NAME, "${proxyArgs} hello-world-java")
+                    def bypass_internal_dns = "--dns=8.8.8.8 --dns=1.1.1.1"
+
+                    dockerImage = docker.build(IMAGE_NAME, "${bypass_internal_dns} hello-world-java")
                 }
             }
         }
